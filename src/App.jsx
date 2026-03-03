@@ -152,7 +152,7 @@ function App() {
                         </div>
                         <div className="video-wrapper">
                               <iframe
-                                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                                    src="https://www.youtube.com/embed/uvSebTJ3r50"
                                     title="YouTube video player"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
