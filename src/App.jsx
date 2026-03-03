@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
       Star, Users, Music, Search,
       Facebook, Twitter, Instagram
 } from 'lucide-react';
+import logo from './assets/logo.png';
+import crisImg from './assets/cris.jpg';
 
 function App() {
       const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      const [showCrisStory, setShowCrisStory] = useState(false);
 
       return (
             <div className="app">
@@ -24,27 +27,26 @@ function App() {
                   {/* Header */}
                   <header className="header">
                         <div className="logo">
-                              {/* Logo placeholder - text based to resemble GENNESIS */}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <span style={{ fontSize: '40px', fontWeight: '800', color: '#121539', letterSpacing: '-2px' }}>GEN<span style={{ color: '#F58133' }}>N</span>ESIS</span>
-                                    <div style={{ display: 'flex', flexDirection: 'column', color: '#121539', fontSize: '10px', marginTop: '10px' }}>
-                                          <span>Dicionário de Música</span>
-                                          <span>Popular Brasileira Cristã</span>
-                                    </div>
-                              </div>
+                              <img src={logo} alt="GENNESIS Dicionário de Música Popular Brasileira Cristã" />
                         </div>
 
                         <div className="main-buttons">
                               <a href="#artistas" className="btn-circle">
-                                    <Star size={24} />
+                                    <div className="icon-container">
+                                          <Star size={24} />
+                                    </div>
                                     <span>Artistas</span>
                               </a>
                               <a href="#personalidades" className="btn-circle">
-                                    <Users size={24} />
+                                    <div className="icon-container">
+                                          <Users size={24} />
+                                    </div>
                                     <span>Personalidades</span>
                               </a>
                               <a href="#musicas" className="btn-circle">
-                                    <Music size={24} />
+                                    <div className="icon-container">
+                                          <Music size={24} />
+                                    </div>
                                     <span>Músicas</span>
                               </a>
                         </div>
@@ -144,11 +146,34 @@ function App() {
                   {/* Video & More Text Section */}
                   <section className="video-section">
                         <div className="video-text">
-                              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
-                              <button className="btn-learn-more">Saiba Mais</button>
+                              <p>Assista aos detalhes do lançamento do Dicionário Gênnesis da Música Popular Brasileira Cristã, realizado no auditório da Biblioteca Nacional. Idealizado por Cris Nascimento (CEO da CN Filmes), o projeto surge como o maior portal de preservação da memória musical cristã no Brasil. O vídeo apresenta o apoio da Secretaria de Cultura do Rio de Janeiro e a participação de autoridades, destacando a missão de catalogar desde os hinários centenários até a música contemporânea, reconhecendo o valor da arte cristã como patrimônio cultural brasileiro.</p>
+
+                              {showCrisStory && (
+                                    <div className="cris-story" style={{ marginTop: '20px', padding: '15px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                                                <img
+                                                      src={crisImg}
+                                                      alt="Cris Nascimento"
+                                                      style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid white', flexShrink: 0 }}
+                                                />
+                                                <h4 style={{ color: '#121539', margin: 0, fontSize: '18px' }}>O Perfil de Cris Nascimento (A Idealizadora)</h4>
+                                          </div>
+                                          <p>A história dela explica por que o dicionário nasceu com esse rigor documental:</p>
+                                          <ul style={{ paddingLeft: '20px', fontSize: '14px', lineHeight: '1.6' }}>
+                                                <li style={{ marginBottom: '10px' }}><strong>Raízes Simples:</strong> Natural do interior de Pernambuco, ela aprendeu a ler com jornais de feira e gibis. Sua paixão por livros vem da infância humilde e do acesso a escolas públicas.</li>
+                                                <li style={{ marginBottom: '10px' }}><strong>Trajetória na Biblioteca Nacional:</strong> Ela trabalhou na instituição de 1995 a 2003, no Departamento Nacional do Livro. Para ela, a Biblioteca Nacional é sua "segunda casa", onde ela chorava ao tocar em obras originais e documentos históricos.</li>
+                                                <li><strong>Experiência Acadêmica:</strong> Teve passagem pela Academia Brasileira de Letras (ABL), onde trabalhou com bibliotecas e projetos culturais patrocinados pela Petrobras, convivendo com grandes intelectuais e obras autografadas de Machado de Assis e Euclides da Cunha.</li>
+                                          </ul>
+                                    </div>
+                              )}
+
+                              <button
+                                    className="btn-learn-more"
+                                    onClick={() => setShowCrisStory(!showCrisStory)}
+                                    style={{ marginTop: '15px' }}
+                              >
+                                    {showCrisStory ? 'Ocultar História' : 'Conheça a Idealizadora'}
+                              </button>
                         </div>
                         <div className="video-wrapper">
                               <iframe
@@ -172,18 +197,12 @@ function App() {
 
                         <div className="footer-bottom">
                               <div className="footer-logo">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                          <span style={{ fontSize: '30px', fontWeight: '800', color: '#121539', letterSpacing: '-2px' }}>GEN<span style={{ color: '#F58133' }}>N</span>ESIS</span>
-                                          <div style={{ display: 'flex', flexDirection: 'column', color: '#121539', fontSize: '8px', marginTop: '8px' }}>
-                                                <span>Dicionário de Música</span>
-                                                <span>Popular Brasileira Cristã</span>
-                                          </div>
-                                    </div>
+                                    <img src={logo} alt="GENNESIS Dicionário de Música Popular Brasileira Cristã" />
                               </div>
                               <div className="social-icons">
                                     <a href="#" className="social-icon fb"><Facebook size={20} /></a>
                                     <a href="#" className="social-icon tw"><Twitter size={20} /></a>
-                                    <a href="#" className="social-icon ig"><Instagram size={20} /></a>
+                                    <a href="https://www.instagram.com/dicionario.gennesis/" target="_blank" rel="noopener noreferrer" className="social-icon ig"><Instagram size={20} /></a>
                               </div>
                         </div>
                   </footer>

@@ -83,17 +83,20 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 20px 40px;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
 .logo img {
-  height: 80px;
+  width: 380px;
+  height: auto;
+  object-fit: contain;
 }
 
 .main-buttons {
   display: flex;
-  gap: 20px;
+  gap: 40px;
+  margin-right: 20px;
 }
 
 .btn-circle {
@@ -101,28 +104,37 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 25px;
-  min-width: 140px;
-  border-radius: 40px;
-  background-color: white;
-  color: var(--blue-primary);
   text-decoration: none;
   font-weight: 700;
   font-size: 14px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  border: 2px solid #eaeaea;
-  /* Light border like image */
+  color: var(--text-primary);
   transition: all 0.3s ease;
 }
 
+.btn-circle .icon-container {
+  background-color: var(--blue-dark);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-circle.active .icon-container,
+.btn-circle:hover .icon-container {
+  background-color: var(--orange);
+}
+
 .btn-circle:hover {
-  border-color: var(--blue-primary);
   transform: translateY(-2px);
 }
 
 .btn-circle svg {
-  margin-bottom: 2px;
-  color: var(--blue-primary);
+  color: currentColor;
 }
 
 .hero {
@@ -385,6 +397,7 @@ button {
 
 .video-section {
   display: flex;
+  align-items: flex-start;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
@@ -420,7 +433,8 @@ button {
   flex: 1;
   background: #000;
   position: relative;
-  min-height: 300px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
 }
 
 .video-wrapper iframe {
@@ -467,7 +481,9 @@ button {
 }
 
 .footer-logo img {
-  height: 60px;
+  width: 280px;
+  height: auto;
+  object-fit: contain;
 }
 
 .social-icons {
