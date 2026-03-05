@@ -1,14 +1,148 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
       Star, Users, Music, Search,
-      Facebook, Twitter, Instagram
+      Facebook, Twitter, Instagram, Shield
 } from 'lucide-react';
 import logo from './assets/logo.png';
 import crisImg from './assets/cris.jpg';
 
+// ----------------------------------------------------------------
+// URL base da nossa API Backend (rodando em localhost:5000)
+// ----------------------------------------------------------------
+const API_URL = 'http://localhost:5000';
+
+// ----------------------------------------------------------------
+// Componente: Card de Verbete (resultado de busca / listagem)
+// ----------------------------------------------------------------
+function VerbeteCard({ verbete }) {
+      const navigate = useNavigate();
+      const titulo = verbete.titulo_formatado || verbete.titulo;
+      return (
+            <div
+                  className="card-item"
+                  onClick={() => navigate(`/verbete/${verbete.slug}`)}
+                  style={{ cursor: 'pointer' }}
+                  title={`Ver página de ${titulo}`}
+            >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        {verbete.foto_perfil && (
+                              <img
+                                    src={verbete.foto_perfil}
+                                    alt={titulo}
+                                    style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                              />
+                        )}
+                        <div>
+                              <div className="card-item-title" style={{ color: '#121539', fontWeight: 600 }}>{titulo}</div>
+                              <span className="card-item-link">{verbete.categoria_tipo}</span>
+                        </div>
+                  </div>
+            </div>
+      );
+}
+
+// ----------------------------------------------------------------
+// Componente: Resultados de Busca Expandida (seção abaixo do hero)
+// ----------------------------------------------------------------
+function ResultadosBusca({ termo, resultados, carregando }) {
+      if (!termo && resultados.length === 0) return null;
+      return (
+            <section style={{ padding: '30px 40px', background: '#f4f6f9', borderBottom: '1px solid #ddd' }}>
+                  <h3 style={{ marginBottom: 15, color: '#121539' }}>
+                        {carregando ? '🔄 Buscando...' : `📋 Resultados${termo ? ` para "${termo}"` : ''}: ${resultados.length} encontrado(s)`}
+                  </h3>
+                  {!carregando && resultados.length === 0 && termo && (
+                        <p style={{ color: '#888' }}>Nenhum verbete encontrado. Tente outro termo.</p>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                        {resultados.map(v => <VerbeteCard key={v.id} verbete={v} />)}
+                  </div>
+            </section>
+      );
+}
+
+// ----------------------------------------------------------------
+// APP PRINCIPAL
+// ----------------------------------------------------------------
 function App() {
       const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       const [showCrisStory, setShowCrisStory] = useState(false);
+
+      // --- Estados de Busca ---
+      const [termoBusca, setTermoBusca] = useState('');
+      const [categoriaBusca, setCategoriaBusca] = useState('');
+      const [resultadosBusca, setResultadosBusca] = useState([]);
+      const [buscando, setBuscando] = useState(false);
+      const [buscaAtiva, setBuscaAtiva] = useState(false);
+
+      // --- Estados dos Novos Verbetes (vindos da API) ---
+      const [novosVerbetes, setNovosVerbetes] = useState([]);
+      const [carregandoNovos, setCarregandoNovos] = useState(true);
+
+      // --- Estado da letra selecionada na barra ---
+      const [letraSelecionada, setLetraSelecionada] = useState(null);
+      const [verbetesPorLetra, setVerbetesPorLetra] = useState([]);
+
+      // -------------------------------------------------------
+      // Ao carregar a página: busca os últimos verbetes publicados
+      // -------------------------------------------------------
+      useEffect(() => {
+            fetch(`${API_URL}/api/v1/verbetes?limite=5`)
+                  .then(r => r.json())
+                  .then(data => {
+                        setNovosVerbetes(data.dados || []);
+                  })
+                  .catch(() => setNovosVerbetes([]))
+                  .finally(() => setCarregandoNovos(false));
+      }, []);
+
+      // -------------------------------------------------------
+      // Função de Busca (conecta ao endpoint /api/v1/busca)
+      // -------------------------------------------------------
+      const handleBuscar = useCallback(async (e) => {
+            if (e) e.preventDefault();
+            if (!termoBusca.trim()) return;
+
+            setBuscando(true);
+            setBuscaAtiva(true);
+            setLetraSelecionada(null);
+
+            try {
+                  const url = `${API_URL}/api/v1/busca?termo=${encodeURIComponent(termoBusca)}`;
+                  const res = await fetch(url);
+                  const dados = await res.json();
+                  setResultadosBusca(dados);
+            } catch {
+                  setResultadosBusca([]);
+            } finally {
+                  setBuscando(false);
+            }
+      }, [termoBusca]);
+
+      // -------------------------------------------------------
+      // Função: Clique na Letra do Alfabeto
+      // -------------------------------------------------------
+      const handleLetra = useCallback(async (letra) => {
+            setLetraSelecionada(letra);
+            setBuscaAtiva(true);
+            setBuscando(true);
+            setTermoBusca('');
+            setResultadosBusca([]);
+
+            try {
+                  const url = `${API_URL}/api/v1/verbetes?letra_inicial=${letra}${categoriaBusca ? `&categoria_tipo=${categoriaBusca}` : ''}`;
+                  const res = await fetch(url);
+                  const data = await res.json();
+                  setVerbetesPorLetra(data.dados || []);
+                  setResultadosBusca(data.dados || []);
+            } catch {
+                  setVerbetesPorLetra([]);
+            } finally {
+                  setBuscando(false);
+            }
+      }, [categoriaBusca]);
 
       return (
             <div className="app">
@@ -16,7 +150,18 @@ function App() {
                   <div className="top-bar">
                         <div className="alphabet">
                               {alphabet.map((letter) => (
-                                    <a key={letter} href={`#${letter.toLowerCase()}`}>{letter}</a>
+                                    <a
+                                          key={letter}
+                                          href={`#${letter.toLowerCase()}`}
+                                          onClick={(e) => { e.preventDefault(); handleLetra(letter); }}
+                                          style={{
+                                                fontWeight: letraSelecionada === letter ? 'bold' : 'normal',
+                                                color: letraSelecionada === letter ? '#f47c20' : undefined,
+                                                borderBottom: letraSelecionada === letter ? '2px solid #f47c20' : undefined,
+                                          }}
+                                    >
+                                          {letter}
+                                    </a>
                               ))}
                         </div>
                         <div className="lang-selector">
@@ -31,7 +176,7 @@ function App() {
                         </div>
 
                         <div className="main-buttons">
-                              <a href="#artistas" className="btn-circle">
+                              <a href="#artistas" className="btn-circle" onClick={(e) => { e.preventDefault(); handleLetra('A'); }}>
                                     <div className="icon-container">
                                           <Star size={24} />
                                     </div>
@@ -56,35 +201,54 @@ function App() {
                   <section className="hero">
                         <div className="hero-content">
                               <h1 className="hero-title">Procure aqui as Personalidades, Artistas e Músicas</h1>
-                              <form className="search-form">
+                              <form className="search-form" onSubmit={handleBuscar}>
                                     <div className="search-input-group">
                                           <Search className="search-icon" />
-                                          <input type="text" placeholder="Procurar por..." className="search-input" />
+                                          <input
+                                                type="text"
+                                                placeholder="Procurar por..."
+                                                className="search-input"
+                                                value={termoBusca}
+                                                onChange={(e) => setTermoBusca(e.target.value)}
+                                          />
                                     </div>
-                                    <select className="category-select">
-                                          <option>Selecione a Categoria</option>
-                                          <option>Artistas</option>
-                                          <option>Personalidades</option>
-                                          <option>Músicas</option>
+                                    <select
+                                          className="category-select"
+                                          value={categoriaBusca}
+                                          onChange={(e) => setCategoriaBusca(e.target.value)}
+                                    >
+                                          <option value="">Selecione a Categoria</option>
+                                          <option value="Cantor">Artistas</option>
+                                          <option value="Grupo">Grupos / Bandas</option>
+                                          <option value="Hino">Hinos</option>
+                                          <option value="Album">Álbuns</option>
                                     </select>
                                     <button type="submit" className="search-btn">PROCURAR</button>
                               </form>
                         </div>
                   </section>
 
+                  {/* Resultados de Busca (só aparece quando há busca ativa) */}
+                  {buscaAtiva && (
+                        <ResultadosBusca
+                              termo={letraSelecionada ? `letra ${letraSelecionada}` : termoBusca}
+                              resultados={resultadosBusca}
+                              carregando={buscando}
+                        />
+                  )}
+
                   {/* Cards Section */}
                   <section className="cards-section">
-                        {/* Card 1 */}
+                        {/* Card 1 – NOVOS VERBETES (via API) */}
                         <div className="card">
                               <h3 className="card-title">Novos Verbetes</h3>
-                              <div className="card-item">
-                                    <div className="card-item-title">Baruk</div>
-                                    <a href="#" className="card-item-link">Veja mais em Artistas</a>
-                              </div>
-                              <div className="card-item">
-                                    <div className="card-item-title">Prisma Brasil</div>
-                                    <a href="#" className="card-item-link">Veja mais em Artistas</a>
-                              </div>
+                              {carregandoNovos ? (
+                                    <p style={{ color: '#888', fontSize: 13 }}>Carregando...</p>
+                              ) : novosVerbetes.length === 0 ? (
+                                    <p style={{ color: '#aaa', fontSize: 13 }}>Nenhum verbete publicado ainda.</p>
+                              ) : (
+                                    novosVerbetes.map(v => <VerbeteCard key={v.id} verbete={v} />)
+                              )}
                         </div>
 
                         {/* Card 2 */}
@@ -132,8 +296,6 @@ function App() {
                               </p>
                         </div>
 
-                        {/* Grid Logos */}
-                        {/* Placeholder for the checkered logo pattern seen in the image */}
                         <div className="grid-logos">
                               {Array.from({ length: 16 }).map((_, i) => (
                                     <div key={i} className={`grid-cell ${i % 2 === 0 ? 'bg-blue' : 'bg-orange'}`}>
@@ -206,8 +368,19 @@ function App() {
                               </div>
                         </div>
                   </footer>
+
                   <div className="copyright">
                         Dicionário da Música Popular Brasileira Cristã – 2024 ©
+                        {/* Escudo secreto do Admin */}
+                        <a
+                              href="/admin"
+                              title="Acesso Restrito"
+                              style={{ marginLeft: 12, opacity: 0.25, color: 'inherit', transition: 'opacity 0.3s' }}
+                              onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                              onMouseLeave={e => e.currentTarget.style.opacity = 0.25}
+                        >
+                              <Shield size={14} />
+                        </a>
                   </div>
             </div>
       );

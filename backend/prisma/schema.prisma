@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Verbete {
+  id               String   @id @default(uuid())
+  titulo           String
+  subtitulo        String?
+  categoria_tipo   String
+  texto_biografia  String?   // Para artistas/grupos
+  texto_letra      String?   // Para hinos
+  referencias      String?
+  foto_perfil      String?   // URL do Cloudinary para otimização de cache/velocidade
+  youtube_url      String?   // Link do vídeo do YouTube (ex: https://youtu.be/abc123)
+  slug             String   @unique
+  status           String   @default("Rascunho")
+  data_nascimento  String?
+  data_falecimento String?
+  data_formacao    String?
+  data_fim         String?
+  
+  // Relacionamentos para Hinos e Álbuns
+  eh_hino          Boolean  @default(false)
+  numero_hinario   Int?
+  titulo_formatado String?  // Titulo inteligente para hinos
+
+  // Álbuns
+  eh_album         Boolean  @default(false)
+  ano_lancamento   Int?
+  gravadora        String?
+  capa_album       String?
+
+  // Relacionamentos muitos para muitos usando tabelas de junção do Prisma
+  obrasAutoradas  VerbeteObras[]  @relation("CompositorOrArtista")
+  autoresDaObra   VerbeteObras[]  @relation("ObraComoHinoOuAlbum")
+
+  data_criacao     DateTime @default(now())
+  data_atualizacao DateTime @updatedAt
+}
+
+// Tabela de Junção para relacionamentos Muitos-para-Muitos
+// Exemplos: Um Cantor tem muitas Músicas, Uma Música tem muitos Cantores
+model VerbeteObras {
+  // O principal (Ex: O Cantor)
+  ator_id      String
+  ator         Verbete @relation("CompositorOrArtista", fields: [ator_id], references: [id], onDelete: Cascade)
+  
+  // A obra vinculada (Ex: O Hino ou o Álbum)
+  obra_id      String
+  obra         Verbete @relation("ObraComoHinoOuAlbum", fields: [obra_id], references: [id], onDelete: Cascade)
+
+  @@id([ator_id, obra_id])
+}
